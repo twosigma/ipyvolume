@@ -19,6 +19,7 @@ package ipyvolume;
 import com.twosigma.beakerx.widget.Box;
 import com.twosigma.beakerx.widget.FloatSlider;
 import com.twosigma.beakerx.widget.HBox;
+import com.twosigma.beakerx.widget.Link;
 import com.twosigma.beakerx.widget.ToggleButton;
 import com.twosigma.beakerx.widget.ToggleButtons;
 import com.twosigma.beakerx.widget.VBox;
@@ -97,12 +98,19 @@ public class PyLab {
                 specularExponentControl.setMin(0);
                 specularExponentControl.setValue(specularExponent);
                 specularExponentControl.setDescription("specular exp");
+            new Link(vol, "ambient_coefficient", ambientCoefficientControl, "value");
+            new Link(vol, "diffuse_coefficient", diffuseCoefficientControl, "value");
+            new Link(vol, "specular_coefficient", specularCoefficientControl, "value");
+            new Link(vol, "specular_exponent", specularExponentControl, "value");
             new HBox(Arrays.asList(ambientCoefficientControl, diffuseCoefficientControl));
-            List<Widget> widgets_bottom = Arrays.asList(
-                    new HBox(Arrays.asList(ambientCoefficientControl, diffuseCoefficientControl)),
-                    new HBox(Arrays.asList(specularCoefficientControl, specularExponentControl))
-            );
-            current.container = new VBox(widgets_bottom);
+            List<Widget> widgetsBottom = new ArrayList<>();
+            if (vol.getTf() instanceof TransferFunctionWidgetJs3) {
+                widgetsBottom.add(((TransferFunctionWidgetJs3) vol.getTf()).control());
+            }
+            widgetsBottom.add(current.figure);
+            widgetsBottom.add(new HBox(Arrays.asList(ambientCoefficientControl, diffuseCoefficientControl)));
+            widgetsBottom.add(new HBox(Arrays.asList(specularCoefficientControl, specularExponentControl)));
+            current.container = new VBox(widgetsBottom);
         }
         return vol;
     }
@@ -110,18 +118,19 @@ public class PyLab {
 
     private static TransferFunction transferFunction() {
         TransferFunctionWidgetJs3 tf = new TransferFunctionWidgetJs3();
-        Figure fig = gcf();
+        gcf();
         return tf;
     }
 
     private static Figure figure(String key, boolean controls, boolean controls_vr, boolean debug) {
-        if (!key.isEmpty() && current.figures.containsKey(key)) {
+        if (key!=null && !key.isEmpty() && current.figures.containsKey(key)) {
             current.figure = current.figures.get(key);
             current.container = current.containers.get(key);
         } else {
             current.figure = new Figure();
             List<Widget> widgetList = new ArrayList<>();
-            if (key.isEmpty()) {
+            widgetList.add(current.figure);
+            if (key==null || key.isEmpty()) {
                 key = UUID.randomUUID().toString();
             }
             if (controls) {
@@ -143,18 +152,19 @@ public class PyLab {
                 show.setOptions(Arrays.asList("Volume", "Back", "Front"));
                 widgetList.add(show);
             }
-            current.containers.put(key, new VBox(widgetList));
+            current.container = new VBox(widgetList);
+
+            current.figures.put(key, current.figure);
+            current.containers.put(key, current.container);
         }
         return current.figure;
     }
 
     private static Figure gcf() {
         if (current.figure == null){
-            return new Figure();
+            return figure(null, false, false, false);
         }
-        else {
-            return current.figure;
-        }
+        return current.figure;
     }
 
     public static float nanmax(float[][][] data) {
@@ -192,7 +202,7 @@ public class PyLab {
 
     }
 
-    private static Box gcc() {
+    public static Box gcc() {
         gcf();
         return current.container;
     }
@@ -202,5 +212,10 @@ public class PyLab {
         Box container = null;
         Map<String, Figure> figures = new HashMap<>();
         Map<String, Box> containers = new HashMap<>();
+    }
+
+    public static void clear(){
+        current.container = null;
+        current.figure = null;
     }
 }

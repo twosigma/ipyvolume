@@ -5,6 +5,7 @@ import com.twosigma.beakerx.widget.Box;
 import com.twosigma.beakerx.widget.FloatSlider;
 import com.twosigma.beakerx.widget.HBox;
 import com.twosigma.beakerx.widget.Label;
+import com.twosigma.beakerx.widget.Link;
 import com.twosigma.beakerx.widget.VBox;
 
 import java.util.Arrays;
@@ -155,6 +156,12 @@ public class TransferFunctionWidgetJs3 extends TransferFunction {
     label1.setDescription("Levels");
     Label label2 = new Label();
     label2.setDescription("Opacities");
+    new Link(this, "level1", l1, "value");
+    new Link(this, "level2", l2, "value");
+    new Link(this, "level3", l3, "value");
+    new Link(this, "opacity1", o1, "value");
+    new Link(this, "opacity2", o2, "value");
+    new Link(this, "opacity3", o3, "value");
     return new VBox(Arrays.asList(new HBox(Arrays.asList(label1, l1, l2, l3)), new HBox(Arrays.asList(label2, o1, o2, o3))));
   }
 
